@@ -1,10 +1,8 @@
 use indicatif::{ProgressBar, ProgressStyle};
 
-use crate::error::ScillaResult;
-
-pub async fn show_spinner<F, T>(message: &str, fut: F) -> ScillaResult<T>
+pub async fn show_spinner<F, T>(message: &str, fut: F) -> anyhow::Result<T>
 where
-    F: std::future::Future<Output = ScillaResult<T>>,
+    F: std::future::Future<Output = anyhow::Result<T>>,
 {
     let spinner = ProgressBar::new_spinner();
     spinner.set_style(

@@ -1,17 +1,18 @@
-// src/prompts.rs
+use std::str::FromStr;
+
 use crate::commands::{
     account::AccountCommand, cluster::ClusterCommand, config::ConfigCommand, stake::StakeCommand,
     vote::VoteCommand, *,
 };
-use inquire::Select;
+use inquire::{Select, Text};
 
 pub fn prompt_for_command() -> anyhow::Result<Command> {
     let top_level = Select::new(
         "Choose a command group:",
         vec![
+            "Account",
             "Cluster",
             "Stake",
-            "Account",
             "Vote",
             "ScillaConfig",
             "Exit",
@@ -96,24 +97,26 @@ fn prompt_account() -> anyhow::Result<AccountCommand> {
     let choice = Select::new(
         "Account Command:",
         vec![
-            "Check Balance",
+            "Fetch Account info",
+            "Get Account Balance",
             "Transfer SOL",
             "Request Airdrop",
-            "Confirm Transaction",
-            "Largest Accounts",
-            "Nonce Account Info",
+            "Confirm a pending transaction",
+            "Fetch cluster’s largest accounts",
+            "Inspect or manage Nonce accounts",
             "Go Back",
         ],
     )
     .prompt()?;
 
     Ok(match choice {
-        "Check Balance" => AccountCommand::Balance,
+        "Fetch Account info" => AccountCommand::Fetch,
+        "Get Account Balance" => AccountCommand::Balance,
         "Transfer SOL" => AccountCommand::Transfer,
         "Request Airdrop" => AccountCommand::Airdrop,
-        "Confirm Transaction" => AccountCommand::ConfirmTransaction,
-        "Largest Accounts" => AccountCommand::LargestAccounts,
-        "Nonce Account Info" => AccountCommand::NonceAccount,
+        "Confirm a pending transaction" => AccountCommand::ConfirmTransaction,
+        "Fetch cluster’s largest accounts" => AccountCommand::LargestAccounts,
+        "Inspect or manage Nonce accounts" => AccountCommand::NonceAccount,
         "Go Back" => AccountCommand::GoBack,
         _ => unreachable!(),
     })
@@ -152,4 +155,13 @@ fn prompt_config() -> anyhow::Result<ConfigCommand> {
         "Edit ScillaConfig" => ConfigCommand::Edit,
         _ => unreachable!(),
     })
+}
+
+pub fn prompt_data<T>(msg: &str) -> anyhow::Result<T>
+where
+    T: FromStr,
+    <T as FromStr>::Err: ToString + Send + Sync + 'static,
+{
+    let input = Text::new(msg).prompt()?;
+    T::from_str(&input).map_err(|e| anyhow::anyhow!(e.to_string()))
 }

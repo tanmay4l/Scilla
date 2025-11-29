@@ -28,6 +28,6 @@ impl StakeCommand {
             StakeCommand::GoBack => {
                 return Ok(CommandExec::GoBack);
             }
-        }
+        };
     }
 }

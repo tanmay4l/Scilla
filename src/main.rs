@@ -6,6 +6,7 @@ use console::style;
 
 pub mod commands;
 pub mod config;
+pub mod constants;
 pub mod context;
 pub mod error;
 pub mod prompt;

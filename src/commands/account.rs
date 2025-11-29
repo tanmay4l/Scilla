@@ -1,10 +1,17 @@
-use console::style;
+use std::ops::Div;
 
-use crate::{commands::CommandExec, context::ScillaContext, error::ScillaResult, ui::show_spinner};
+use console::style;
+use solana_pubkey::Pubkey;
+
+use crate::{
+    commands::CommandExec, constants::LAMPORTS_PER_SOL, context::ScillaContext,
+    error::ScillaResult, prompt::prompt_data, ui::show_spinner,
+};
 
 /// Commands related to wallet or account management
 #[derive(Debug, Clone)]
 pub enum AccountCommand {
+    Fetch,
     Balance,
     Transfer,
     Airdrop,
@@ -17,9 +24,10 @@ pub enum AccountCommand {
 impl AccountCommand {
     pub fn description(&self) -> &'static str {
         match self {
-            AccountCommand::Balance => "Get wallet balance",
-            AccountCommand::Transfer => "Transfer SOL to another address",
-            AccountCommand::Airdrop => "Request SOL from faucet",
+            AccountCommand::Fetch => "Fetch Account info",
+            AccountCommand::Balance => "Get Account Balance",
+            AccountCommand::Transfer => "Transfer SOL",
+            AccountCommand::Airdrop => "Request Airdrop",
             AccountCommand::ConfirmTransaction => "Confirm a pending transaction",
             AccountCommand::LargestAccounts => "Fetch cluster’s largest accounts",
             AccountCommand::NonceAccount => "Inspect or manage nonce accounts",
@@ -30,22 +38,40 @@ impl AccountCommand {
 
 impl AccountCommand {
     pub async fn process_command(&self, ctx: &ScillaContext) -> ScillaResult<()> {
-        let task = match self {
-            AccountCommand::Balance => todo!(),
-            AccountCommand::Transfer => todo!(),
-            AccountCommand::Airdrop => request_sol_airdrop(&ctx),
-            AccountCommand::ConfirmTransaction => todo!(),
-            AccountCommand::LargestAccounts => todo!(),
-            AccountCommand::NonceAccount => todo!(),
-            AccountCommand::GoBack => return Ok(CommandExec::GoBack),
+        match self {
+            AccountCommand::Fetch => {
+                let pubkey: Pubkey = prompt_data("Enter Pubkey :")?;
+                show_spinner(self.description(), fetch_acc_data(ctx, &pubkey)).await?;
+            }
+            AccountCommand::Balance => {
+                let pubkey: Pubkey = prompt_data("Enter Pubkey :")?;
+                show_spinner(self.description(), fetch_account_balance(ctx, &pubkey)).await?;
+            }
+            AccountCommand::Transfer => {
+                // show_spinner(self.description(), todo!()).await?;
+            }
+            AccountCommand::Airdrop => {
+                show_spinner(self.description(), request_sol_airdrop(ctx)).await?;
+            }
+            AccountCommand::ConfirmTransaction => {
+                // show_spinner(self.description(), todo!()).await?;
+            }
+            AccountCommand::LargestAccounts => {
+                // show_spinner(self.description(), todo!()).await?;
+            }
+            AccountCommand::NonceAccount => {
+                // show_spinner(self.description(), todo!()).await?;
+            }
+            AccountCommand::GoBack => {
+                return Ok(CommandExec::GoBack);
+            }
         };
 
-        show_spinner(self.description(), task).await?;
         Ok(CommandExec::Process(()))
     }
 }
 
-async fn request_sol_airdrop(ctx: &ScillaContext) -> ScillaResult<()> {
+async fn request_sol_airdrop(ctx: &ScillaContext) -> anyhow::Result<()> {
     let sig = ctx.rpc().request_airdrop(ctx.pubkey(), 1).await;
     match sig {
         Ok(signature) => {
@@ -64,5 +90,34 @@ async fn request_sol_airdrop(ctx: &ScillaContext) -> ScillaResult<()> {
         }
     }
 
-    Ok(CommandExec::Process(()))
+    Ok(())
+}
+
+async fn fetch_acc_data(ctx: &ScillaContext, pubkey: &Pubkey) -> anyhow::Result<()> {
+    let acc = ctx.rpc().get_account(pubkey).await?;
+
+    println!(
+        "{}\n{}",
+        style("Account info:").green().bold(),
+        style(format!("{:#?}", acc)).cyan()
+    );
+
+    Ok(())
+}
+
+async fn fetch_account_balance(ctx: &ScillaContext, pubkey: &Pubkey) -> anyhow::Result<()> {
+    let acc = ctx.rpc().get_account(pubkey).await?;
+    let acc_balance: f64 = if acc.lamports > 0 {
+        (acc.lamports as f64).div(LAMPORTS_PER_SOL as f64)
+    } else {
+        0.0
+    };
+
+    println!(
+        "{}\n{}",
+        style("Account balance in SOL:").green().bold(),
+        style(format!("{:#?}", acc_balance)).cyan()
+    );
+
+    Ok(())
 }
