@@ -218,7 +218,7 @@ async fn fetch_validators(ctx: &ScillaContext) -> anyhow::Result<()> {
             Cell::new("Activated Stake (SOL)").add_attribute(comfy_table::Attribute::Bold),
         ]);
 
-        for (idx, validator) in validators.current.iter().take(20).enumerate() {
+        for (idx, validator) in validators.current.iter().enumerate() {
             let stake_sol = (validator.activated_stake as f64).div(LAMPORTS_PER_SOL as f64);
             validators_table.add_row(vec![
                 Cell::new(format!("{}", idx + 1)),
@@ -230,17 +230,6 @@ async fn fetch_validators(ctx: &ScillaContext) -> anyhow::Result<()> {
 
         println!("\n{}", style("TOP VALIDATORS").green().bold());
         println!("{}", validators_table);
-
-        if validators.current.len() > 20 {
-            println!(
-                "\n{}",
-                style(format!(
-                    "... and {} more validators",
-                    validators.current.len() - 20
-                ))
-                .dim()
-            );
-        }
     }
 
     Ok(())
@@ -286,7 +275,6 @@ async fn fetch_supply_info(ctx: &ScillaContext) -> anyhow::Result<()> {
 
 async fn fetch_inflation_info(ctx: &ScillaContext) -> anyhow::Result<()> {
     let inflation = ctx.rpc().get_inflation_rate().await?;
-
     let mut table = Table::new();
     table
         .load_preset(UTF8_FULL)
