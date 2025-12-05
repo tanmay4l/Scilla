@@ -15,9 +15,10 @@ pub fn expand_tilde(path: &str) -> PathBuf {
     // On TOMLs, ~ is not expanded, so do it manually
 
     if let Some(stripped) = path.strip_prefix("~/")
-        && let Some(home) = home_dir() {
-            return home.join(stripped);
-        }
+        && let Some(home) = home_dir()
+    {
+        return home.join(stripped);
+    }
     PathBuf::from(path)
 }
 
