@@ -34,7 +34,7 @@ pub enum VoteCommand {
 }
 
 impl VoteCommand {
-    pub const fn spinner_msg(&self) -> &'static str {
+    pub fn spinner_msg(&self) -> &'static str {
         match self {
             VoteCommand::CreateVoteAccount => "Creating vote account…",
             VoteCommand::AuthorizeVoter => "Authorizing voter…",

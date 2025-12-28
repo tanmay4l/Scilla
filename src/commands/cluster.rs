@@ -23,7 +23,7 @@ pub enum ClusterCommand {
 }
 
 impl ClusterCommand {
-    pub const fn spinner_msg(&self) -> &'static str {
+    pub fn spinner_msg(&self) -> &'static str {
         match self {
             ClusterCommand::EpochInfo => "Fetching current epoch and progress…",
             ClusterCommand::CurrentSlot => "Fetching latest confirmed slot…",

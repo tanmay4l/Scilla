@@ -13,15 +13,15 @@ pub struct ScillaContext {
 }
 
 impl ScillaContext {
-    pub const fn keypair(&self) -> &Keypair {
+    pub fn keypair(&self) -> &Keypair {
         &self.keypair
     }
 
-    pub const fn rpc(&self) -> &RpcClient {
+    pub fn rpc(&self) -> &RpcClient {
         &self.rpc_client
     }
 
-    pub const fn pubkey(&self) -> &Pubkey {
+    pub fn pubkey(&self) -> &Pubkey {
         &self.pubkey
     }
 }
